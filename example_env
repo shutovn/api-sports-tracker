@@ -1,0 +1,17 @@
+# Переменный для MYSQL
+MYSQLROOT = <password>
+MYSQLUSER = workout
+MYSQLPASS = <password>
+DATABASE = workout
+MYSQLPORT = 3307
+MYSQLHOST = db_workout
+
+
+# Переменный для Python
+EXTPYTHONPORT = 5001
+PYTHONHOST = python_app_workout
+
+# Переменный для авторизации на ресурсе sports-tracker.com
+LOGIN_SPORTS_TRACKER = <user_name>
+PASS_SPORTS_TRACKER = <user_password>
+TOKEN_SPORTS_TRACKER = <user_authorization_token>

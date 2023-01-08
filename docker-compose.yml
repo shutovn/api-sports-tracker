@@ -1,0 +1,46 @@
+version: '3.1'
+
+services:
+   db_workout:
+       container_name: ${MYSQLHOST}
+       hostname: ${MYSQLHOST}
+       image: mysql:8
+       restart: unless-stopped
+       cap_add:
+         - SYS_NICE  # CAP_SYS_NICE
+       environment:
+         MYSQL_ROOT_PASSWORD: '${MYSQLROOT}'
+         MYSQL_USER: $MYSQLUSER
+         MYSQL_PASSWORD: $MYSQLPASS
+         MYSQL_DATABASE: $DATABASE
+       volumes:
+         - ./db/initdb.sql:/docker-entrypoint-initdb.d/initdb.sql
+         - ./db/conf.d:/etc/mysql/conf.d
+         - ./db/my.cfn:/etc/mysql/my.cfn
+         - db_workout_data:/var/lib/mysql
+         - /etc/localtime:/etc/localtime:ro
+       ports:
+         - "${MYSQLPORT}:3306"
+
+   python_app_workout:
+       container_name: ${PYTHONHOST}
+       hostname: ${PYTHONHOST}
+       build: python/
+       restart: unless-stopped
+       environment:
+         DB_USER: $MYSQLUSER
+         DB_PASSWORD: $MYSQLPASS
+         DB_DATABASE: $DATABASE
+         DB_HOST: $MYSQLHOST
+         ST_LOGIN: $LOGIN_SPORTS_TRACKER
+         ST_PASS: $PASS_SPORTS_TRACKER
+         ST_TOKEN: $TOKEN_SPORTS_TRACKER
+       volumes:
+         - ./python/myapp:/app
+         - ./python/treks:/app/treks
+         - /etc/localtime:/etc/localtime:ro
+       ports:
+         - "${EXTPYTHONPORT}:5000"
+
+volumes:
+        db_workout_data:
