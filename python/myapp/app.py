@@ -28,6 +28,8 @@ app.config['MYSQL_DATABASE_DB'] = md_base
 app.config['MYSQL_DATABASE_HOST'] = md_host
 mysql.init_app(app)
 
+url = "https://api.sports-tracker.com"
+
 # Тест общей функции для всех routers
 def time():
     now = datetime.datetime.now()
@@ -44,6 +46,20 @@ data = {
     "p": f"{password_st}"
 }
 #End Конец Переменные для подключения к сервису sports-tracker.com
+
+
+@app.route("/test_auth")
+def test_auth():
+
+    session = requests.Session()
+    link = f"{url}/apiserver/v1/login?source=javascript"
+    user = fake_useragent.UserAgent().random
+
+    auth_responce = session.post(link, data=data, headers=header)
+
+    responce = auth_responce.json()
+
+    return jsonify(responce)
 
 
 @app.route('/hello')
@@ -227,7 +243,6 @@ def export_workout():
     cursor.execute(sql_query)
     data = cursor.fetchall()
 
-    #i = "6225d6ab16a62607a01e5b12"
     for i in data:
         key = i[0]
         id = i[1]
