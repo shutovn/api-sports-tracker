@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from flask import Flask
 from flask import jsonify
+from flask import request
 import requests
 import re
 import fake_useragent
@@ -28,8 +29,6 @@ app.config['MYSQL_DATABASE_DB'] = md_base
 app.config['MYSQL_DATABASE_HOST'] = md_host
 mysql.init_app(app)
 
-url = "https://api.sports-tracker.com"
-
 # Тест общей функции для всех routers
 def time():
     now = datetime.datetime.now()
@@ -37,7 +36,7 @@ def time():
 
 #Begin Переменные для подключения к сервису sports-tracker.com
 header = {
-    'user-agent': 'user' ,
+    'User-Agent': 'user' ,
     'STTAuthorization':	f'{token_st}'
 }
 
@@ -46,21 +45,6 @@ data = {
     "p": f"{password_st}"
 }
 #End Конец Переменные для подключения к сервису sports-tracker.com
-
-
-@app.route("/test_auth")
-def test_auth():
-
-    session = requests.Session()
-    link = f"{url}/apiserver/v1/login?source=javascript"
-    user = fake_useragent.UserAgent().random
-
-    auth_responce = session.post(link, data=data, headers=header)
-
-    responce = auth_responce.json()
-
-    return jsonify(responce)
-
 
 @app.route('/hello')
 def hello_world():
@@ -92,7 +76,10 @@ def test_mysql():
 
 @app.route("/workouts_json")
 def workouts_json():
-    x = 10
+    amount = request.args.get('amount')
+    if amount == None:
+        amount = 10
+
     workout_dict = {}
 
     session = requests.Session()
@@ -102,7 +89,7 @@ def workouts_json():
     session.post(link, data=data, headers=header)
 
     # Получить последние x тренировок
-    workout_info = f"https://api.sports-tracker.com/apiserver/v1/workouts?sortonst=true&limit={x}&offset=0"
+    workout_info = f"https://api.sports-tracker.com/apiserver/v1/workouts?sortonst=true&limit={amount}&offset=0"
 
     # Получить список картинок тренировки, но без url
     # workout_info = f"https://api.sports-tracker.com/apiserver/v1/images/workout/<key_workout>"
@@ -122,7 +109,10 @@ def workouts_json():
 # Запись последних тренировок в БД, новых стренировок которые еще не записаны в БД. кол-во должно передаваться аргументом к запросу.
 @app.route("/workout_last")
 def workout():
-    count = 50
+    amount = request.args.get('amount')
+    if amount == None:
+        amount = 30
+
     workout_dict = {}
 
     session = requests.Session()
@@ -131,7 +121,7 @@ def workout():
 
     session.post(link, data=data, headers=header)
 
-    workout_info = f"https://api.sports-tracker.com/apiserver/v1/workouts?sortonst=true&limit={count}&offset=0"
+    workout_info = f"https://api.sports-tracker.com/apiserver/v1/workouts?sortonst=true&limit={amount}&offset=0"
     workout_responce = session.get(workout_info, headers=header)
 
     workout = workout_responce.json()
@@ -145,7 +135,7 @@ def workout():
     conn = mysql.connect()
     cursor =conn.cursor()
 
-    while True and flag == 0 and count != c:
+    while True and flag == 0 and amount != c:
         for i in list_var:
             var = i
             try:
